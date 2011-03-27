@@ -1,17 +1,14 @@
 #define echoPin 2                            // Pin to receive echo pulse YELLOW
 #define trigPin 3                            // Pin to send trigger pulse GREEN
 
-unsigned long d = 0;
-
 //rangefinder
 unsigned long distance = 0;
 unsigned long MAX_RANGE = 10200;
 unsigned long MIN_RANGE = 150;
-
+unsigned long OUT_OF_BOUNDS = 100000000;
 
 //interval
 unsigned long interval = 20;
-unsigned long previous_time = 0;
 unsigned long now = 0;
 
 void setup(){
@@ -34,8 +31,9 @@ int raw_rangefinder_distance(){
 }
 
 //http://stackoverflow.com/questions/5294955/how-to-scale-down-a-range-of-numbers-with-a-known-min-and-max-value
+//scales an input value with the specified range to an integer between 0 and 255
 int scale255(unsigned long val){
-  //scales an input value with the specified range to an integer between 0 and 255
+
 
   unsigned long scaled = ((255 * (val - MIN_RANGE)) / (MAX_RANGE - MIN_RANGE));
 
@@ -45,17 +43,22 @@ int scale255(unsigned long val){
 }
 
 
+// grab 5 consecutive values and average them
+// shortcircuit if the returned value is out of
+// bounds as that seems to represent an object
+// being too close.
 unsigned long read_rangefinder() {
+
   unsigned long d1 = raw_rangefinder_distance();
-  if(d1 > 100000000) return MIN_RANGE;
+  if(d1 > OUT_OF_BOUNDS) return MIN_RANGE;
   unsigned long d2 = raw_rangefinder_distance();
-  if(d2 > 100000000) return MIN_RANGE;
+  if(d2 > OUT_OF_BOUNDS) return MIN_RANGE;
   unsigned long d3 = raw_rangefinder_distance();
-  if(d3 > 100000000) return MIN_RANGE;
+  if(d3 > OUT_OF_BOUNDS) return MIN_RANGE;
   unsigned long d4 = raw_rangefinder_distance();
-  if(d4 > 100000000) return MIN_RANGE;
+  if(d4 > OUT_OF_BOUNDS) return MIN_RANGE;
   unsigned long d5 = raw_rangefinder_distance();
-  if(d5 > 100000000) return MIN_RANGE;
+  if(d5 > OUT_OF_BOUNDS) return MIN_RANGE;
 
   unsigned long num = 5;
   unsigned long result = (d1 + d2 + d3 + d4 + d5) / num;
@@ -63,10 +66,10 @@ unsigned long read_rangefinder() {
   return result;
 }
 
+//called during each interval of `interval` ms
 void each_interval() {
   distance = read_rangefinder();
   Serial.write(scale255(distance));
-
 }
 
 void loop(){
