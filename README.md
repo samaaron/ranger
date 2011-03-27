@@ -19,4 +19,4 @@ Connect the following Rangefinder connections to the specified Arduino connectio
 
 ## Use
 
-The Arduino will continually send unsigned long values (4 bytes each) to the serial port representing the distance of the object from the sensor.
+The Arduino will continually send individual bytes (integers in the range 0 -> 255) to the serial port representing the distance of the object from the sensor.
